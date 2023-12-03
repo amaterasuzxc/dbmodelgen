@@ -1,6 +1,6 @@
 # dbmodelgen
 
-## University mastership gragudation project
+## University mastership graduation project
 
 ### Topic: Research and development of an automatic system for database model generation based on natural language task text.
 

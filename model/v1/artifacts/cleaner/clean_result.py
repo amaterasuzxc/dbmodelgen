@@ -34,6 +34,10 @@ def is_util(gramm):
     return gramm.tag.POS in {'CONJ', 'PRCL', 'INTJ', 'PREP'}
 
 
+def is_verb(gramm):
+    return gramm.tag.POS in {'VERB'}
+
+
 def process_gramm_pairs(gramms_list, i):
     size = len(gramms_list)
     result_list = []
@@ -45,7 +49,7 @@ def process_gramm_pairs(gramms_list, i):
     elif is_util(gramm):
         result_list.append(gramm)
     else:
-        result_list.append(gramm.inflect({gramm.tag.number, 'nomn'}))
+        if is_noun(gramm): result_list.append(gramm.inflect({gramm.tag.number, 'nomn'}))
     i += 1
     if i < size: result_list += process_gramm_pairs(gramms_list, i)
     return result_list
@@ -62,6 +66,7 @@ def normalize(lst):
             w_list = len(phrase) > 1
             if w_list:
                 gramms_to_process = list(map(lambda _:morph.parse(_)[0], phrase))
+                gramms_to_process = list(filter(lambda _:not is_verb(_), gramms_to_process))
                 processed_gramms = process_gramm_pairs(gramms_to_process, 0)
                 words += processed_gramms
             else:
@@ -73,6 +78,7 @@ def normalize(lst):
             phrases += words
         if p_list:
             gramms_to_process = phrases
+            gramms_to_process = list(filter(lambda _:not is_verb(_), gramms_to_process))
             processed_gramms = process_gramm_pairs(gramms_to_process, 0)
             phrases = processed_gramms
         phrases = list(map(lambda _:_.word, phrases))
