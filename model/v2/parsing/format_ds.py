@@ -24,4 +24,3 @@ def writetxt(list, filename):
 print(file_dir)
 ds = readsome('../data/raw_data.csv', ';')
 writetxt(data_for_ner(ds), '../data/dataset_ner.txt')
-# print(nds[1:][0][2])
