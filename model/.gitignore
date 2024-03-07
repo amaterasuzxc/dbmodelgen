@@ -3,12 +3,16 @@
 
 ### Trained models
 /**/trained
+training/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+### Weasel log ###
+*.lock
 
 # C extensions
 *.so
