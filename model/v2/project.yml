@@ -1,0 +1,75 @@
+title: "Example project of creating a novel nlp component to do relation extraction from scratch." # FIXME
+description: "This example project shows how to implement a spaCy component with a custom Machine Learning model, how to train it with and without a transformer, and how to apply it on an evaluation dataset." # FIXME
+
+# Variables can be referenced across the project.yml using ${vars.var_name}
+vars:
+  raw_annotations: "data/mapped.jsonl"
+  ready_annotations: "data/prepared.jsonl"
+  component_registry: "model/components/component_registry.py"
+  base_config: "model/config/base_config.cfg"
+  config: "model/config/config.cfg"
+  train_file: "model/data/train.spacy"
+  dev_file: "model/data/dev.spacy"
+  test_file: "model/data/test.spacy"
+  trained_model: "model/training/model-best"
+
+# These are the directories that the project needs. The project CLI will make
+# sure that they always exist.
+directories: ["scripts", "model", "data"]
+
+# Assets that should be downloaded or available in the directory. You can replace
+# this with your own input data.
+assets:
+    - dest: ${vars.ready_annotations}
+
+workflows:
+  all:
+    - data
+    - build_config
+    - train
+
+# Project commands, specified in a style similar to CI config files (e.g. Azure
+# pipelines). The name is the command name that lets you trigger the command
+# via "spacy project run [command] [path]". The help message is optional and
+# shown when executing "spacy project run [optional command] [path] --help".
+commands:
+  - name: "data"
+    script:
+      - "python ./scripts/data_processing/prepare/prepare_for_parser.py ${vars.raw_annotations} ${vars.ready_annotations}"
+      - "python ./scripts/data_processing/parser/parse_data.py ${vars.ready_annotations} ${vars.train_file} ${vars.dev_file} ${vars.test_file}"
+    deps:
+      - ${vars.raw_annotations}
+    outputs:
+      - ${vars.ready_annotations}
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.test_file}
+
+  - name: "build_config"
+    help: "Crate config from model/config/base-config.cfg"
+    script:
+      - "python -m spacy init fill-config ${vars.base_config} ${vars.config} --code ${vars.component_registry}"
+    deps:
+      - ${vars.base_config}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.config}
+
+  - name: "train"
+    help: "Train the REL model with a Transformer on a GPU and evaluate on the dev corpus."
+    script:
+      - "python -m spacy train ${vars.config} --output model/training --paths.train ${vars.train_file} --paths.dev ${vars.dev_file} --gpu-id 0 --code ${vars.component_registry}"
+    deps:
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.trained_model}
+
+  - name: "evaluate"
+    help: "Apply the best model to new, unseen text, and measure accuracy at different thresholds."
+    script:
+      - "python model/components/rel/evaluate.py ${vars.trained_model} ${vars.test_file} False"
+    deps:
+      - ${vars.trained_model}
+      - ${vars.test_file}
