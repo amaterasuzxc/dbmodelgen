@@ -1,4 +1,4 @@
-# dbmodelgen
+# Database Model Generator
 
 ## University mastership graduation project
 
