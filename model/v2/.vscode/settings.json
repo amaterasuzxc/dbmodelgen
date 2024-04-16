@@ -1,0 +1,4 @@
+{
+    "cmake.configureOnOpen": true,
+    "cmake.sourceDirectory": "G:/OneDrive/SPbSTU/Magister/VKR/project/model/v2/.conda/Lib/site-packages/cupy/_core/include/cupy/_cccl/libcudacxx/cuda/std/detail/libcxx/include"
+}

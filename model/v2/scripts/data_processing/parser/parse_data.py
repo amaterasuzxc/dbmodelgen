@@ -1,5 +1,3 @@
-# This script was derived from parse_data.py but made more generic as a template for various REL parsing needs
-
 import json
 import random
 import typer
@@ -11,22 +9,21 @@ from wasabi import Printer
 
 msg = Printer()
 
-# TODO: define your labels used for annotation either as "symmetrical" or "directed"
-# SYMM_LABELS = ["Binds"]
-DIRECTED_LABELS = ["ATTRIBUTE_OF", "DESCRIBED_BY"]
+SYMM_LABELS = ["ATTRIBUTE_OF", "DESCRIBED_BY"]
+DIRECTED_LABELS = []
+ENTITY_CATEGORIES = ["string", "timestamp", "integer", "double", "boolean"]
 
-# TODO: define splits for train/dev/test. What is not in test or dev, will be used as train.
 test_portion = 0.1
 dev_portion = 0.2
 
-# TODO: set this bool to False if you didn't annotate all relations in all sentences.
 # If it's true, entities that were not annotated as related will be used as negative examples.
-is_complete = False
+is_complete = True
 
 
 def main(json_loc: Path, train_file: Path, dev_file: Path, test_file: Path):
     """Creating the corpus from the Prodigy annotations."""
     Doc.set_extension("rel", default={})
+    Doc.set_extension("ecat", default={})
     vocab = Vocab()
 
     docs = {"train": [], "dev": [], "test": []}
@@ -75,22 +72,53 @@ def main(json_loc: Path, train_file: Path, dev_file: Path, test_file: Path):
                 start = span_end_to_start[relation["head"]]
                 end = span_end_to_start[relation["child"]]
                 label = relation["label"]
-                if label not in DIRECTED_LABELS:
-                    msg.warn(f"Found label '{label}' not defined in DIRECTED_LABELS - skipping")
+                if label not in SYMM_LABELS + DIRECTED_LABELS:
+                    msg.warn(f"Found label '{label}' not defined in SYMM_LABELS or DIRECTED_LABELS - skipping")
                     break
                 if label not in rels[(start, end)]:
                     rels[(start, end)][label] = 1.0
                     pos += 1
+                if label in SYMM_LABELS:
+                    if label not in rels[(end, start)]:
+                        rels[(end, start)][label] = 1.0
+                        pos += 1
 
             # If the annotation is complete, fill in zero's where the data is missing
             if is_complete:
                 for x1 in span_starts:
                     for x2 in span_starts:
-                        for label in DIRECTED_LABELS:
+                        for label in SYMM_LABELS + DIRECTED_LABELS:
                             if label not in rels[(x1, x2)]:
                                 neg += 1
                                 rels[(x1, x2)][label] = 0.0
             doc._.rel = rels
+
+            #Parse entity categories
+            ecats = {}
+            spans = example["spans"]
+            categories = []
+            for span in spans:
+                if span.get("category") is not None:
+                    category = {}
+                    category["start"] = span["token_start"]
+                    category["label"] = span["category"]
+                    categories.append(category)
+
+            if not categories:
+                msg.warn("Could not parse any categories from the JSON file.")
+
+            for category in categories:
+                label = category["label"]
+                start = category["start"]
+                if label not in ENTITY_CATEGORIES:
+                    msg.warn(f"Found category '{label}' not defined in ENTITY_CATEGORIES - skipping")
+                    break
+                if start not in ecats:
+                    ecats[start] = {}
+                if label not in ecats[start]:
+                    ecats[start][label] = 1.0
+            
+            doc._.ecat = ecats
 
             # only keeping documents with at least 1 positive case
             if pos > 0:

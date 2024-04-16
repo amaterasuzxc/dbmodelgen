@@ -4,6 +4,7 @@
 ### Trained models
 /**/trained
 training/
+rel_test/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

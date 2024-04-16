@@ -14,37 +14,37 @@ from thinc.model import set_dropout_rate
 from wasabi import Printer
 
 
-Doc.set_extension("rel", default={}, force=True)
+Doc.set_extension("ecat", default={}, force=True)
 msg = Printer()
 
 
 @Language.factory(
-    "relation_extractor",
+    "entity_categorizer",
     requires=["doc.ents", "token.ent_iob", "token.ent_type"],
-    assigns=["doc._.rel"],
+    assigns=["doc._.ecat"],
     default_score_weights={
-        "rel_micro_p": None,
-        "rel_micro_r": None,
-        "rel_micro_f": None,
+        "ecat_micro_p": None,
+        "ecat_micro_r": None,
+        "ecat_micro_f": None,
     },
 )
-def make_relation_extractor(
+def make_entity_categorizer(
     nlp: Language, name: str, model: Model, *, threshold: float
 ):
-    """Construct a RelationExtractor component."""
-    return RelationExtractor(nlp.vocab, model, name, threshold=threshold)
+    """Construct a EntityCategorizer component."""
+    return EntityCategorizer(nlp.vocab, model, name, threshold=threshold)
 
 
-class RelationExtractor(TrainablePipe):
+class EntityCategorizer(TrainablePipe):
     def __init__(
         self,
         vocab: Vocab,
         model: Model,
-        name: str = "rel",
+        name: str = "ecat",
         *,
-        threshold: float,
+        threshold: float
     ) -> None:
-        """Initialize a relation extractor."""
+        """Initialize an entity categorizer."""
         self.vocab = vocab
         self.model = model
         self.name = name
@@ -63,7 +63,7 @@ class RelationExtractor(TrainablePipe):
     def add_label(self, label: str) -> int:
         """Add a new label to the pipe."""
         if not isinstance(label, str):
-            raise ValueError("Only strings can be added as labels to the RelationExtractor")
+            raise ValueError("Only strings can be added as labels to the EntityCategorizer")
         if label in self.labels:
             return 0
         self.cfg["labels"] = list(self.labels) + [label]
@@ -71,10 +71,10 @@ class RelationExtractor(TrainablePipe):
 
     def __call__(self, doc: Doc) -> Doc:
         """Apply the pipe to a Doc."""
-        # check that there are actually any candidate instances in this batch of examples
-        total_instances = len(self.model.attrs["get_instances"](doc))
-        if total_instances == 0:
-            msg.info("Could not determine any instances in doc - returning doc as is.")
+        # check that there are actually any candidate entities in this batch of examples
+        total_entities = len(self.model.attrs["get_entities"](doc))
+        if total_entities == 0:
+            msg.info("Could not determine any entities of defined types in doc - returning doc as is.")
             return doc
 
         predictions = self.predict([doc])
@@ -83,24 +83,24 @@ class RelationExtractor(TrainablePipe):
 
     def predict(self, docs: Iterable[Doc]) -> Floats2d:
         """Apply the pipeline's model to a batch of docs, without modifying them."""
-        get_instances = self.model.attrs["get_instances"]
-        total_instances = sum([len(get_instances(doc)) for doc in docs])
-        if total_instances == 0:
-            msg.info("Could not determine any instances in any docs - can not make any predictions.")
+        get_entities = self.model.attrs["get_entities"]
+        total_entities = sum([len(get_entities(doc)) for doc in docs])
+        if total_entities == 0:
+            msg.info("Could not determine any entities of defined types in any docs - can not make any predictions.")
         scores = self.model.predict(docs)
         return self.model.ops.asarray(scores)
 
     def set_annotations(self, docs: Iterable[Doc], scores: Floats2d) -> None:
         """Modify a batch of `Doc` objects, using pre-computed scores."""
         c = 0
-        get_instances = self.model.attrs["get_instances"]
+        get_entities = self.model.attrs["get_entities"]
         for doc in docs:
-            for (e1, e2) in get_instances(doc):
-                offset = (e1.start, e2.start)
-                if offset not in doc._.rel:
-                    doc._.rel[offset] = {}
+            for ent in get_entities(doc):
+                offset = ent.start
+                if offset not in doc._.ecat:
+                    doc._.ecat[offset] = {}
                 for j, label in enumerate(self.labels):
-                    doc._.rel[offset][label] = scores[c, j]
+                    doc._.ecat[offset][label] = scores[c, j]
                 c += 1
 
     def update(
@@ -120,11 +120,11 @@ class RelationExtractor(TrainablePipe):
         set_dropout_rate(self.model, drop)
 
         # check that there are actually any candidate instances in this batch of examples
-        total_instances = 0
+        total_entities = 0
         for eg in examples:
-            total_instances += len(self.model.attrs["get_instances"](eg.predicted))
-        if total_instances == 0:
-            msg.info("Could not determine any instances in doc.")
+            total_entities += len(self.model.attrs["get_entities"](eg.predicted))
+        if total_entities == 0:
+            msg.info("Could not determine any entities of defined types in doc.")
             return losses
 
         # run the model
@@ -162,17 +162,17 @@ class RelationExtractor(TrainablePipe):
                 self.add_label(label)
         else:
             for example in get_examples():
-                relations = example.reference._.rel
-                for indices, label_dict in relations.items():
+                categories = example.reference._.ecat
+                for indices, label_dict in categories.items():
                     for label in label_dict.keys():
                         self.add_label(label)
         self._require_labels()
 
         subbatch = list(islice(get_examples(), 10))
         doc_sample = [eg.reference for eg in subbatch]
-        label_sample = self._examples_to_truth(subbatch, init=True)
+        label_sample = self._examples_to_truth(subbatch, True)
         if label_sample is None:
-            raise ValueError("Call begin_training with relevant entities and relations annotated in "
+            raise ValueError("Call begin_training with relevant entities and categories annotated in "
                              "at least a few reference examples!")
         self.model.initialize(X=doc_sample, Y=label_sample)
 
@@ -180,15 +180,15 @@ class RelationExtractor(TrainablePipe):
         # check that there are actually any candidate instances in this batch of examples
         nr_instances = 0
         for eg in examples:
-            nr_instances += len(self.model.attrs["get_instances"](eg.reference if init else eg.predicted))
+            nr_instances += len(self.model.attrs["get_entities"](eg.reference if init else eg.predicted))
         if nr_instances == 0:
             return None
 
         truths = numpy.zeros((nr_instances, len(self.labels)), dtype="f")
         c = 0
         for i, eg in enumerate(examples):
-            for (e1, e2) in self.model.attrs["get_instances"](eg.reference if init else eg.predicted):
-                gold_label_dict = eg.reference._.rel.get((e1.start, e2.start), {})
+            for ent in self.model.attrs["get_entities"](eg.reference if init else eg.predicted):
+                gold_label_dict = eg.reference._.ecat.get(ent.start, {})
                 for j, label in enumerate(self.labels):
                     truths[c, j] = gold_label_dict.get(label, 0)
                 c += 1
@@ -198,21 +198,22 @@ class RelationExtractor(TrainablePipe):
 
     def score(self, examples: Iterable[Example], **kwargs) -> Dict[str, Any]:
         """Score a batch of examples."""
-        return score_relations(examples, self.threshold)
+        return score_categories(examples, self.threshold)
 
 
-def score_relations(examples: Iterable[Example], threshold: float) -> Dict[str, Any]:
+def score_categories(examples: Iterable[Example], threshold: float) -> Dict[str, Any]:
     """Score a batch of examples."""
     micro_prf = PRFScore()
     for example in examples:
-        gold = example.reference._.rel
-        pred = example.predicted._.rel
+        gold = example.reference._.ecat
+        pred = example.predicted._.ecat
         for key, pred_dict in pred.items():
             if key not in gold.keys():
                 for k, v in pred_dict.items():
                     if v >= threshold:
                         micro_prf.fp += 1
                 continue
+        for key, pred_dict in pred.items():
             gold_labels = [k for (k, v) in gold.get(key, {}).items() if v == 1.0]
             for k, v in pred_dict.items():
                 if v >= threshold:
@@ -224,7 +225,7 @@ def score_relations(examples: Iterable[Example], threshold: float) -> Dict[str, 
                     if k in gold_labels:
                         micro_prf.fn += 1
     return {
-        "rel_micro_p": micro_prf.precision,
-        "rel_micro_r": micro_prf.recall,
-        "rel_micro_f": micro_prf.fscore,
+        "ecat_micro_p": micro_prf.precision,
+        "ecat_micro_r": micro_prf.recall,
+        "ecat_micro_f": micro_prf.fscore,
     }

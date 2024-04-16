@@ -1,0 +1,1 @@
+from model.components import component_registry
