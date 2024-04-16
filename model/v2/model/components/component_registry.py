@@ -6,4 +6,6 @@ sys.path.append(file_dir)
 
 import rel.rel_model
 import rel.rel_pipe
-import rel.reader
+import common.reader
+import ecat.ecat_model
+import ecat.ecat_pipe

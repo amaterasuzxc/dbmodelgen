@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Spacy rel train debugger",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "spacy",
+            "args": [
+                "train", "model/config/rel_config.cfg", 
+                "--output", "model/training/rel", 
+                "--paths.train", "model/data/train.spacy", 
+                "--paths.dev", "model/data/dev.spacy", 
+                "--gpu-id", "0", 
+                "--code", "model/components/component_registry.py"
+            ],
+            "justMyCode": false
+        },
+        {
+            "name": "Spacy main train debugger",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "spacy",
+            "args": [
+                "train", "model/config/config.cfg", 
+                "--output", "model/training", 
+                "--paths.train", "model/data/train.spacy", 
+                "--paths.dev", "model/data/dev.spacy", 
+                "--gpu-id", "0", 
+                "--code", "model/components/component_registry.py"
+            ],
+            "justMyCode": false
+        }
+    ]
+}
+

@@ -21,4 +21,5 @@ def read_files(file: Path, nlp: "Language") -> Iterable[Example]:
             spaces=[t.whitespace_ for t in gold],
         )
         pred.ents = gold.ents
-        yield Example(pred, gold)
+        ex = Example(pred, gold)
+        yield ex

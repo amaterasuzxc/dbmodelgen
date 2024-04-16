@@ -4,14 +4,24 @@ description: "This example project shows how to implement a spaCy component with
 # Variables can be referenced across the project.yml using ${vars.var_name}
 vars:
   raw_annotations: "data/mapped.jsonl"
+  ecat_raw_annotations: "data/types_mapped.jsonl"
   ready_annotations: "data/prepared.jsonl"
   component_registry: "model/components/component_registry.py"
   base_config: "model/config/base_config.cfg"
   config: "model/config/config.cfg"
+  ecat_base_config: "model/config/ecat_base_config.cfg"
+  ecat_config: "model/config/ecat_config.cfg"
+  rel_base_config: "model/config/rel_base_config.cfg"
+  rel_config: "model/config/rel_config.cfg"
+  ner_base_config: "model/config/ner_base_config.cfg"
+  ner_config: "model/config/ner_config.cfg"
   train_file: "model/data/train.spacy"
   dev_file: "model/data/dev.spacy"
   test_file: "model/data/test.spacy"
   trained_model: "model/training/model-best"
+  ecat_trained_model: "model/training/ecat/model-best"
+  rel_trained_model: "model/training/rel/model-best"
+  ner_trained_model: "model/training/ner/model-best"
 
 # These are the directories that the project needs. The project CLI will make
 # sure that they always exist.
@@ -27,6 +37,18 @@ workflows:
     - data
     - build_config
     - train
+  ecat:
+    - data
+    - ecat_build_config
+    - ecat_train
+  rel:
+    - data
+    - rel_build_config
+    - rel_train
+  ner:
+    - data
+    - ner_build_config
+    - ner_train
 
 # Project commands, specified in a style similar to CI config files (e.g. Azure
 # pipelines). The name is the command name that lets you trigger the command
@@ -35,10 +57,11 @@ workflows:
 commands:
   - name: "data"
     script:
-      - "python ./scripts/data_processing/prepare/prepare_for_parser.py ${vars.raw_annotations} ${vars.ready_annotations}"
+      - "python ./scripts/data_processing/prepare/prepare_for_parser.py ${vars.raw_annotations} ${vars.ecat_raw_annotations} ${vars.ready_annotations}"
       - "python ./scripts/data_processing/parser/parse_data.py ${vars.ready_annotations} ${vars.train_file} ${vars.dev_file} ${vars.test_file}"
     deps:
       - ${vars.raw_annotations}
+      - ${vars.ecat_raw_annotations}
     outputs:
       - ${vars.ready_annotations}
       - ${vars.train_file}
@@ -46,7 +69,7 @@ commands:
       - ${vars.test_file}
 
   - name: "build_config"
-    help: "Crate config from model/config/base-config.cfg"
+    help: "Create config from model/config/base-config.cfg"
     script:
       - "python -m spacy init fill-config ${vars.base_config} ${vars.config} --code ${vars.component_registry}"
     deps:
@@ -55,16 +78,83 @@ commands:
     outputs:
       - ${vars.config}
 
+  - name: "ecat_build_config"
+    help: "Crate custom config for entity categorizer"
+    script:
+      - "python -m spacy init fill-config ${vars.ecat_base_config} ${vars.ecat_config} --code ${vars.component_registry}"
+    deps:
+      - ${vars.ecat_base_config}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.ecat_config}
+
+  - name: "rel_build_config"
+    help: "Crate custom config for relation extractor"
+    script:
+      - "python -m spacy init fill-config ${vars.rel_base_config} ${vars.rel_config} --code ${vars.component_registry}"
+    deps:
+      - ${vars.rel_base_config}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.rel_config}
+
+  - name: "ner_build_config"
+    help: "Crate custom config for ner"
+    script:
+      - "python -m spacy init fill-config ${vars.ner_base_config} ${vars.ner_config} --code ${vars.component_registry}"
+    deps:
+      - ${vars.ner_base_config}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.ner_config}
+
   - name: "train"
-    help: "Train the REL model with a Transformer on a GPU and evaluate on the dev corpus."
+    help: "Train combined pipeline with transformer"
     script:
       - "python -m spacy train ${vars.config} --output model/training --paths.train ${vars.train_file} --paths.dev ${vars.dev_file} --gpu-id 0 --code ${vars.component_registry}"
     deps:
+      - ${vars.config}
       - ${vars.train_file}
       - ${vars.dev_file}
       - ${vars.component_registry}
     outputs:
       - ${vars.trained_model}
+
+  - name: "ecat_train"
+    help: "Train entity categorizer pipeline with transformer"
+    script:
+      - "python -m spacy train ${vars.ecat_config} --output model/training/ecat --paths.train ${vars.train_file} --paths.dev ${vars.dev_file} --gpu-id 0 --code ${vars.component_registry}"
+    deps:
+      - ${vars.ecat_config}
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.ecat_trained_model}
+
+  - name: "rel_train"
+    help: "Train relation extractor pipeline with transformer"
+    script:
+      - "python -m spacy train ${vars.rel_config} --output model/training/rel --paths.train ${vars.train_file} --paths.dev ${vars.dev_file} --gpu-id 0 --code ${vars.component_registry}"
+    deps:
+      - ${vars.rel_config}
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.rel_trained_model}
+
+  - name: "ner_train"
+    help: "Train ner pipeline with transformer"
+    script:
+      - "python -m spacy train ${vars.ner_config} --output model/training/ner --paths.train ${vars.train_file} --paths.dev ${vars.dev_file} --gpu-id 0 --code ${vars.component_registry}"
+    deps:
+      - ${vars.ner_config}
+      - ${vars.train_file}
+      - ${vars.dev_file}
+      - ${vars.component_registry}
+    outputs:
+      - ${vars.ner_trained_model}
 
   - name: "evaluate"
     help: "Apply the best model to new, unseen text, and measure accuracy at different thresholds."
@@ -73,3 +163,10 @@ commands:
     deps:
       - ${vars.trained_model}
       - ${vars.test_file}
+  
+  - name: "debug_data"
+    script:
+      - "python -m spacy debug data ${vars.config} --code ${vars.component_registry} --paths.train ${vars.train_file} --paths.dev ${vars.dev_file}"
+    deps:
+      - ${vars.config}
+      - ${vars.component_registry}
