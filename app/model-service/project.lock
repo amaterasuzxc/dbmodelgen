@@ -1,0 +1,6 @@
+install_trained_models:
+  cmd: python -m weasel run install_trained_models
+  script:
+    - python -m spacy download ru_core_news_sm
+  deps: []
+  outs: []
