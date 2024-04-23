@@ -1,0 +1,10 @@
+title: "Microservice for applying pipelined model to task texts."
+
+workflows:
+  setup:
+    - install_trained_models
+
+commands:
+  - name: "install_trained_models"
+    script:
+      - "python -m spacy download ru_core_news_sm"
