@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+  model-service:
+    image: mservice:1.1
+    ports: 
+      - 8005:8080

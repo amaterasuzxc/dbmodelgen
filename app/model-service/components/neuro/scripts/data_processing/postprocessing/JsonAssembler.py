@@ -1,70 +1,37 @@
 import json
-from typing import List, Dict, Any
+from typing import List
 from spacy.tokens.doc import Doc
+from pydantic import BaseModel
+from pydantic.json import pydantic_encoder
 
 from components.neuro.scripts.data_processing.postprocessing.SpanShapeshifter import ShapeShifter
 
 
-class _LogicalAttribute:
-    def __init__(self, name: str) -> None:
-        self.name = name
-        self.type = ""
+class _LogicalAttribute(BaseModel):
+    name: str
+    type: str = None
 
 
-    @property
-    def name(self) -> str:
-        return self._name
-    
-    
-    @name.setter
-    def name(self, value):
-        self._name = value
-    
-
-    @property
-    def type(self) -> str:
-        return self._type
-    
-
-    @type.setter
-    def type(self, value):
-        self._type = value
-
-
-class _LogicalEntity:
-    def __init__(self, name: str) -> None:
-        self.name = name
-        self.attributes: List[_LogicalAttribute] = []
-
-
-    @property
-    def name(self) -> str:
-        return self._name
-    
-
-    @name.setter
-    def name(self, value):
-        self._name = value
-    
-
-    @property
-    def attributes(self) -> List[_LogicalAttribute]:
-        return self._attributes
-    
-
-    @attributes.setter
-    def attributes(self, value):
-        self._attributes = value
+class _LogicalEntity(BaseModel):
+    name: str
+    attributes: List[_LogicalAttribute] = []
     
 
 class JsonAssembler:
-    def __init__(self, rel_threshold: float) -> None:
+    def __init__(self, rel_threshold: float = 0.8, ecat_threshold: float = 0.25) -> None:
         self._rel_threshold = rel_threshold
+        self._ecat_threshold = ecat_threshold
         self._shapeshifter = ShapeShifter()
 
 
     def _shapeshift_entities(self, entities: List[_LogicalEntity]) -> List[_LogicalEntity]:
-        return entities # TODO
+        for ent in entities:
+            ent.name = self._shapeshifter.shapeshift(span=ent.name, single=False)
+
+            for attr in ent.attributes:
+                attr.name = self._shapeshifter.shapeshift(span=attr.name, single=True)
+        
+        return entities
 
 
     def _build_entities(self, doc: Doc) -> List[_LogicalEntity]:
@@ -73,7 +40,7 @@ class JsonAssembler:
         for ent in doc.ents:
             if ent.label_ != "LENTITY":
                 continue
-            entity = _LogicalEntity(ent.text)
+            entity = _LogicalEntity(name = ent.text)
             attributes: List[_LogicalAttribute] = []
 
             for relation in list(filter(lambda _:
@@ -83,9 +50,10 @@ class JsonAssembler:
                 attr = next(filter(lambda _:_.start == relation[0][0], doc.ents))
                 if attr.label_ != "LATTRIBUTE":
                     continue
-                attribute = _LogicalAttribute(attr.text)
+                attribute = _LogicalAttribute(name = attr.text)
                 scores = next(filter(lambda _:_[0] == attr.start, doc._.ecat.items()))[1]
-                attribute.type = max(scores.items(), key=lambda scores:scores[1])[0]
+                max_scored = max(scores.items(), key=lambda scores:scores[1])
+                attribute.type = max_scored[0] if max_scored[1] >= self._ecat_threshold else "string"
                 attributes.append(attribute)
             
             entity.attributes = attributes
@@ -98,4 +66,4 @@ class JsonAssembler:
         entities = self._build_entities(doc)
         entities = self._shapeshift_entities(entities)
 
-        return json.dumps(entities, default=lambda _:_.__dict__, ensure_ascii=False) # FIXME: field names
+        return json.dumps(entities, ensure_ascii=False, default=pydantic_encoder)

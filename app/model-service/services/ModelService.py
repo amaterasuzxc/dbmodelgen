@@ -10,6 +10,10 @@ class ModelService:
     def __init__(self) -> None:
         self._model = PipelineModel("config/pipeline_config.yml", resolver)
         self._lock = thr.Lock()
+
+
+    def context_loaded(self) -> bool:
+        return True
         
 
     def get_model_response(self, text: str) -> str:

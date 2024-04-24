@@ -1,0 +1,11 @@
+# envs #
+
+.conda
+.venv
+**env
+
+# cache #
+
+__pycache__
+**/__pycache__
+
