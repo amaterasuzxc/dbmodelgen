@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from starlette.status import HTTP_200_OK
 
 from exceptions.MsConflictError import MsConflictError
 from exceptions.MsInternalError import MsInternalError
@@ -30,10 +31,11 @@ def generic_handler(request: Request, ex: MsInternalError):
 
 @app.get("/healthcheck")
 def healthcheck():
-    return {}
+    if model_service.context_loaded():
+        return Response(status_code=200)
 
 
-@app.get("/apply")
+@app.get("/apply", status_code=HTTP_200_OK)
 def apply_model(request: ProcessingRequestDto) -> ProcessingResponseDto:
     text = ""
     try:
