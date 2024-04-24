@@ -3,6 +3,7 @@ rel: "components/neuro/model/rel-trained"
 ecat: "components/neuro/model/ecat-trained"
 
 rel_threshold: 0.8
+ecat_threshold: 0.8
 
 cleaner_config: "config/cleaner_config.yml"
 merger_config: "config/merger_config.yml"

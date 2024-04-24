@@ -12,6 +12,7 @@ class PipelineModel:
     def __init__(self, config_path: str, path_resolver: Callable[[str], str]) -> None:
         self._pipeline_config = read_yaml(path_resolver(config_path))
         self._rel_threshold = float(self._pipeline_config.rel_threshold)
+        self._ecat_threshold = float(self._pipeline_config.ecat_threshold)
         self._model = spacy.load(self._pipeline_config.ner)
         self._rel = spacy.load(self._pipeline_config.rel)
         self._ecat = spacy.load(self._pipeline_config.ecat)
@@ -23,7 +24,7 @@ class PipelineModel:
         self._model.add_pipe("lemmatizer", source=self._pretrained_ru_pipe, last=True)
         self._cleaner = Cleaner(config_path=path_resolver(self._pipeline_config.cleaner_config))
         self._merger = SpanMerger(config_path=path_resolver(self._pipeline_config.merger_config))
-        self._json_assembler = JsonAssembler(rel_threshold=self._rel_threshold)
+        self._json_assembler = JsonAssembler(rel_threshold=self._rel_threshold, ecat_threshold=self._ecat_threshold)
 
     
     def _get_predictions(self, text: str) -> Doc:
