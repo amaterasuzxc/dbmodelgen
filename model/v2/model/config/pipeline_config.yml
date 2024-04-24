@@ -3,6 +3,7 @@ rel: "model/training/rel/model-best"
 ecat: "model/training/ecat/model-best"
 
 rel_threshold: 0.8
+ecat_threshold: 0.8
 
 cleaner_config: "scripts/data_processing/postprocessing/cleaner_config.yml"
 merger_config: "scripts/data_processing/postprocessing/merger_config.yml"
