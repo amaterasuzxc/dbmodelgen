@@ -17,24 +17,56 @@ configurations {
 	}
 }
 
+def generatedSourcesDir = "src/generated/java"
+
+sourceSets {
+	generated {
+		java {
+			srcDirs = [generatedSourcesDir]
+		}
+	}
+}
+
 repositories {
 	mavenCentral()
 }
 
 ext {
-	set('springCloudVersion', "2023.0.1")
+	springCloudVersion = '2023.0.1'
+	mapStructVersion = '1.5.5.Final'
+	lombokMapStructBindingVersion = '0.2.0'
+	hypersistenceUtilsHibernateVersion = '3.5.1'
+	hibernateJPAModelGenVersion = '6.2.5.Final'
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	// Spring
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Database
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	annotationProcessor "org.hibernate:hibernate-jpamodelgen:${hibernateJPAModelGenVersion}"
+	implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsHibernateVersion}"
 	implementation 'org.flywaydb:flyway-core'
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
-	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
+
+	// OpenFeign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation 'io.github.openfeign:feign-jackson'
+
+	// Mapper
+	// Mapper
+	implementation "org.mapstruct:mapstruct:${mapStructVersion}"
+	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokMapStructBindingVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapStructVersion}"
+
+	// Util
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:junit-jupiter'
