@@ -1,23 +1,22 @@
-package ru.amatemeow.dbmg.controller.task.dto.request;
+package ru.amatemeow.dbmg.controller.model.dto.info;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskRequestDto {
+public class ModelInfoDto {
 
   @JsonProperty("title")
-  @NotEmpty
   private String title;
 
-  @JsonProperty("text")
-  @NotEmpty
-  private String text;
+  @JsonProperty("entities")
+  private List<LogicalEntityInfoDto> entities;
 }

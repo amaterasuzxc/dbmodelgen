@@ -1,11 +1,11 @@
-package ru.amatemeow.dbmg.controller.task.dto.response;
+package ru.amatemeow.dbmg.service.task.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.amatemeow.dbmg.common.enumeration.TaskStatus;
+import ru.amatemeow.dbmg.service.model.model.Model;
 
 import java.util.UUID;
 
@@ -13,20 +13,11 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskResponseDto {
+public class Task {
 
-  @JsonProperty("id")
   private UUID id;
-
-  @JsonProperty("name")
-  private String name;
-
-  @JsonProperty("text")
+  private String title;
   private String text;
-
-  @JsonProperty("status")
   private TaskStatus status;
-
-  @JsonProperty("model_id")
-  private UUID modelId;
+  private Model model;
 }
