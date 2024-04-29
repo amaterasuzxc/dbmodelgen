@@ -20,4 +20,7 @@ public class ModelResponseDto {
 
   @JsonProperty("model_info")
   private ModelInfoDto modelInfo;
+
+  @JsonProperty("model_as_ddl")
+  private String ddl;
 }

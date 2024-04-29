@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import ru.amatemeow.dbmg.common.constants.TaskExecutorNames;
 import ru.amatemeow.dbmg.common.enumeration.TaskStatus;
-import ru.amatemeow.dbmg.repository.model.entity.ModelEntity;
 import ru.amatemeow.dbmg.repository.task.TaskRepository;
 import ru.amatemeow.dbmg.repository.task.entity.TaskEntity;
 
@@ -31,13 +30,13 @@ public class TaskExecutor {
     task = taskRepository.saveAndFlush(task);
 
     try {
-      ModelEntity model = textProcessingTask.runTask(task);
-      task.setModel(model);
-      model.setTask(task);
+      textProcessingTask.runTask(task);
+      task.setStatus(TaskStatus.COMPLETED);
     } catch (Exception e) {
       task.setStatus(TaskStatus.FAILED);
-      taskRepository.saveAndFlush(task);
       log.error("Pipeline {} execution failed with", taskId, e);
+    } finally {
+      taskRepository.saveAndFlush(task);
     }
 
     return CompletableFuture.completedFuture(null);

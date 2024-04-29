@@ -25,5 +25,5 @@ public class LogicalEntityInfoAttribute {
   @JsonProperty("attributes")
   @Valid
   @Builder.Default
-  private List<LogicalAttributeInfoDto> attributes = new ArrayList<>();
+  private List<LogicalAttributeInfoAttribute> attributes = new ArrayList<>();
 }
