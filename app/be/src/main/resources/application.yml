@@ -1,1 +1,56 @@
-spring.application.name: dbmg
+spring:
+  application:
+    name: "dbmg"
+  flyway:
+    baseline-on-migrate: true
+    out-of-order: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    jdbc-url: jdbc:postgresql://localhost:5432/dmbg
+    username: "dmbg"
+    password: "dbmg"
+    maximumPoolSize: 20
+    minimumIdle: 5
+    idleTimeout: 30000
+    poolName: ModelsJPAHikariCP
+    maxLifetime: 2000000
+    connectionTimeout: 30000
+    testWhileIdle: true
+    validationQuery: SELECT 1+1;
+  sql:
+    init:
+      platform: postgresql
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+      connection:
+        provider_class: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql: true
+        show_sql: false
+        format_sql: false
+        id:
+          new_generator_mappings: false
+        search:
+          autoregister_listeners: false
+        bytecode:
+          use_reflection_optimizer: false
+  cloud:
+    openfeign:
+      client:
+        config:
+          model-service-client:
+            connectTimeout: 10000
+            readTimeout: 600000
+
+rest-client:
+  model-service:
+    url: http://localhost:8005
+
+dmbg:
+  task:
+    polling-interval: 30

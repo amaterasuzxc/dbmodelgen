@@ -16,4 +16,5 @@ public class Model {
 
   private UUID id;
   private ModelInfo modelInfo;
+  private String ddl;
 }

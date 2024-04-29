@@ -51,12 +51,12 @@ public class TaskExecutionEnqueuer {
     baseExecutionFuture
         .thenRunAsync(
             () -> {
-              log.info("Pipeline {} execution finished without exception", taskId);
+              log.info("Task '{}' execution finished without exception", taskId);
               tasksInProgress.remove(taskId);
             })
         .exceptionallyAsync(
             (Throwable t) -> {
-              log.error("Pipeline {} execution finished with exception", taskId, t);
+              log.error("Task '{}' execution finished with exception", taskId, t);
               tasksInProgress.remove(taskId);
               return null;
             });

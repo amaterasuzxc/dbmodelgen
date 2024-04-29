@@ -23,11 +23,14 @@ public class ModelEntity {
   private UUID id;
 
   @Type(JsonType.class)
-  @Column(name = "entities")
+  @Column(name = "model_info")
   @Builder.Default
   private ModelInfoAttribute modelInfo = new ModelInfoAttribute();
 
+  @Column(name = "model_as_ddl")
+  private String ddl;
+
   @OneToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "model_id")
+  @JoinColumn(name = "task_id")
   private TaskEntity task;
 }
