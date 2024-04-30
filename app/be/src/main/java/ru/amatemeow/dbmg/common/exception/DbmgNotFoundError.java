@@ -4,21 +4,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class DmbgNotFoundError extends DmbgCustomError {
+public class DbmgNotFoundError extends DbmgCustomError {
 
-  public DmbgNotFoundError() {
+  public DbmgNotFoundError() {
     super();
   }
 
-  public DmbgNotFoundError(String message) {
+  public DbmgNotFoundError(String message) {
     super(message);
   }
 
-  public DmbgNotFoundError(String message, Throwable cause) {
+  public DbmgNotFoundError(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public DmbgNotFoundError(Throwable cause) {
+  public DbmgNotFoundError(Throwable cause) {
     super(cause);
   }
 }

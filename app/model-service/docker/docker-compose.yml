@@ -1,7 +1,7 @@
 version: '3'
 
 services:
-  model-service:
-    image: mservice:1.1
+  ai-service:
+    image: dbmgai:1.3
     ports: 
       - 8005:8080

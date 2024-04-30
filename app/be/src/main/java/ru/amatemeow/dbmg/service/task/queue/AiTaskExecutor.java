@@ -15,12 +15,12 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class TaskExecutor {
+public class AiTaskExecutor {
 
   private final TaskRepository taskRepository;
   private final TextProcessingTask textProcessingTask;
 
-  @Async(TaskExecutorNames.TASK_EXECUTOR)
+  @Async(TaskExecutorNames.AI_TASK_EXECUTOR)
   public CompletableFuture<Void> execute(UUID taskId) {
 
     log.info("Executing task {}", taskId);
@@ -34,7 +34,7 @@ public class TaskExecutor {
       task.setStatus(TaskStatus.COMPLETED);
     } catch (Exception e) {
       task.setStatus(TaskStatus.FAILED);
-      log.error("Pipeline {} execution failed with", taskId, e);
+      log.error("Task {} execution failed with", taskId, e);
     } finally {
       taskRepository.saveAndFlush(task);
     }

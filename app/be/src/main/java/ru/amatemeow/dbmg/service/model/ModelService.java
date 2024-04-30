@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface ModelService {
 
-  Model createModel(TaskEntity task, String jsonString);
+  void populateModel(TaskEntity task, String jsonString);
   Model getModel(UUID modelId);
 }

@@ -1,4 +1,4 @@
-package ru.amatemeow.dbmg.service.DdlService;
+package ru.amatemeow.dbmg.service.model.ddl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

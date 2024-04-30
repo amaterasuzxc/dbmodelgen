@@ -5,7 +5,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.amatemeow.dbmg.common.exception.DmbgCustomError;
+import ru.amatemeow.dbmg.common.exception.DbmgCustomError;
 
 @Slf4j
 @Component
@@ -17,8 +17,8 @@ public class ErrorProcessor {
   }
 
   public ErrorMessage processError(Exception ex, HttpStatus status) {
-    if (ex instanceof DmbgCustomError dmbgCustomError) {
-      return processDmbgCustomError(dmbgCustomError, status);
+    if (ex instanceof DbmgCustomError dbmgCustomError) {
+      return processDbmgCustomError(dbmgCustomError, status);
     }
     return processGenericError(status);
   }
@@ -30,7 +30,7 @@ public class ErrorProcessor {
         .build();
   }
 
-  private ErrorMessage processDmbgCustomError(DmbgCustomError ex, HttpStatus status) {
+  private ErrorMessage processDbmgCustomError(DbmgCustomError ex, HttpStatus status) {
     return ErrorMessage.builder()
         .status(status)
         .message(ex.getMessage())
