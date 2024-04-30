@@ -12,5 +12,4 @@ public class Urls {
 
   public static final String MODEL_URL = BASIC_URL + "/models";
   public static final String MODEL_BY_ID_URL = MODEL_URL + "/{id}";
-  public static final String MODEL_DDL_URL = MODEL_BY_ID_URL + "/ddl";
 }

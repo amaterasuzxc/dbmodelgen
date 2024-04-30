@@ -18,8 +18,8 @@ public class TaskResponseDto {
   @JsonProperty("id")
   private UUID id;
 
-  @JsonProperty("name")
-  private String name;
+  @JsonProperty("title")
+  private String title;
 
   @JsonProperty("text")
   private String text;

@@ -1,6 +1,7 @@
-package ru.amatemeow.dbmg.common.restclient.modelservice.dto.request;
+package ru.amatemeow.dbmg.common.restclient.aiservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProcessModelRequestDto {
+public class ProcessedModelDto {
 
-  @JsonProperty("text")
-  private String text;
+  @JsonProperty("model")
+  @NotNull
+  private String model;
 }

@@ -1,4 +1,4 @@
-package ru.amatemeow.dbmg.common.restclient.modelservice.dto.response;
+package ru.amatemeow.dbmg.common.restclient.aiservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
@@ -6,14 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.amatemeow.dbmg.common.enumeration.AiServiceStatus;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProcessedModelDto {
+public class StatusResponseDto {
 
-  @JsonProperty("model")
+  @JsonProperty("status")
   @NotNull
-  private String model;
+  private AiServiceStatus status;
 }

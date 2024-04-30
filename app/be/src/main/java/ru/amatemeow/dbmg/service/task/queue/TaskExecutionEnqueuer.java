@@ -23,12 +23,12 @@ public class TaskExecutionEnqueuer {
 
   private final Set<UUID> tasksInProgress = ConcurrentHashMap.newKeySet();
 
-  private final TaskExecutor taskExecutor;
+  private final AiTaskExecutor aiExecutor;
   private final TaskRepository taskRepository;
 
   @Transactional(readOnly = true)
   @Scheduled(
-      fixedDelayString = "${dmbg.task.polling-interval:30}",
+      fixedDelayString = "${dbmg.task.polling-interval:30}",
       timeUnit = TimeUnit.SECONDS)
   public void enqueueTasksForExecution() {
     log.info("Start polling for unfinished tasks");
@@ -66,7 +66,7 @@ public class TaskExecutionEnqueuer {
   @Nullable
   private CompletableFuture<Void> execute(UUID taskId) {
     try {
-      CompletableFuture<Void> future = taskExecutor.execute(taskId);
+      CompletableFuture<Void> future = aiExecutor.execute(taskId);
       log.info("Enqueued task {} for execution", taskId);
       return future;
     } catch (TaskRejectedException e) {

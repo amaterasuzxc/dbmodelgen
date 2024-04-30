@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.amatemeow.dbmg.common.enumeration.TaskStatus;
-import ru.amatemeow.dbmg.common.exception.DmbgNotFoundError;
+import ru.amatemeow.dbmg.common.exception.DbmgNotFoundError;
+import ru.amatemeow.dbmg.repository.model.entity.ModelEntity;
+import ru.amatemeow.dbmg.repository.model.entity.info.ModelInfoAttribute;
 import ru.amatemeow.dbmg.repository.task.TaskRepository;
 import ru.amatemeow.dbmg.repository.task.entity.TaskEntity;
 import ru.amatemeow.dbmg.service.task.mapper.TaskMapper;
@@ -39,16 +41,22 @@ public class TaskServiceImpl implements TaskService {
   @Transactional
   private TaskEntity createTask(TaskMetadata metadata) {
     TaskEntity taskEntity = TaskEntity.builder()
+        .id(UUID.randomUUID())
         .title(metadata.getTitle())
         .text(metadata.getText())
         .status(TaskStatus.CREATED)
         .build();
+    ModelEntity modelEntity = ModelEntity.builder()
+        .modelInfo(ModelInfoAttribute.builder().build())
+        .build();
+    modelEntity.setTask(taskEntity);
+    taskEntity.setModel(modelEntity);
     return taskRepository.saveAndFlush(taskEntity);
   }
 
   @Transactional
   private TaskEntity getTaskById(UUID taskId) {
-    return taskRepository.findById(taskId).orElseThrow(DmbgNotFoundError::new);
+    return taskRepository.findById(taskId).orElseThrow(DbmgNotFoundError::new);
   }
 
   @Transactional

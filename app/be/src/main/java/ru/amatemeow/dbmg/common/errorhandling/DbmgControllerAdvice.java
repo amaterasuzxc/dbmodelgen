@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.amatemeow.dbmg.common.exception.DmbgError;
+import ru.amatemeow.dbmg.common.exception.DbmgError;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,8 +17,8 @@ public class DbmgControllerAdvice {
 
   private final ErrorProcessor errorProcessor;
 
-  @ExceptionHandler({DmbgError.class})
-  public ResponseEntity<ErrorMessage> handleGenericException(DmbgError ex) {
+  @ExceptionHandler({DbmgError.class})
+  public ResponseEntity<ErrorMessage> handleGenericException(DbmgError ex) {
     logError(ex);
     return makeErrorResponse(errorProcessor.processError(ex));
   }
