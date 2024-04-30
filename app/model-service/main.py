@@ -7,6 +7,7 @@ from exceptions.MsInternalError import MsInternalError
 from services.ModelService import ModelService
 from dto.request.ProcessingRequestDto import ProcessingRequestDto
 from dto.response.ProcessingResponseDto import ProcessingResponseDto
+from util.ServiceStatusHolder import status as service_status
 
 
 app = FastAPI()
@@ -33,9 +34,18 @@ def generic_handler(request: Request, ex: MsInternalError):
 def healthcheck():
     if model_service.context_loaded():
         return Response(status_code=200)
+    
 
 
-@app.get("/apply", status_code=HTTP_200_OK)
+@app.get("/status")
+def status():
+    return JSONResponse(
+        status_code=200,
+        content={"status": service_status.value}
+    )
+
+
+@app.post("/apply", status_code=HTTP_200_OK)
 def apply_model(request: ProcessingRequestDto) -> ProcessingResponseDto:
     text = ""
     try:
