@@ -32,7 +32,6 @@ public class ModelServiceImpl implements ModelService {
   private final DdlService ddlService;
   private final ModelRepository modelRepository;
 
-  @Transactional
   public void populateModel(TaskEntity task, String jsonString) {
     List<LogicalEntityInfoAttribute> entities = mapResponseStringToEntities(jsonString);
     ModelEntity model = task.getModel();

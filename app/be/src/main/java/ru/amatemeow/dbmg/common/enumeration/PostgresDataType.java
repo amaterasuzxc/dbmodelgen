@@ -10,7 +10,7 @@ public enum PostgresDataType {
   TIMESTAMP("timestamp"),
   STRING("varchar(255)"),
   BOOLEAN("boolean"),
-  NUMERIC("integer"),
+  INTEGER("integer"),
   DOUBLE("double precision");
 
   private final String value;
