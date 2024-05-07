@@ -20,12 +20,17 @@ public class DdlServiceImpl implements DdlService {
   @Override
   public String buildDdl(ModelEntity model) {
     List<String> builtTables = buildTables(model.getModelInfo().getEntities());
-    return String.join("\n\n", builtTables);
+    return CollectionUtils.isEmpty(builtTables) ? "" : String.join("\n\n", builtTables);
   }
 
   private List<String> buildTables(List<LogicalEntityInfoAttribute> entities) {
+    if (CollectionUtils.isEmpty(entities)) {
+      return List.of();
+    }
     return entities.stream().map(ent -> {
-      String tableClause = MessageFormat.format(DdlClausePatterns.TABLE_PATTERN, ent.getName());
+      String tableClause = MessageFormat.format(
+          DdlClausePatterns.TABLE_PATTERN,
+          ent.getName().replaceAll(" ", "_"));
       String attributesClausesUnited = buildAttributes(ent.getAttributes());
       return MessageFormat.format(
           DdlClausePatterns.CREATE_TABLE_CLAUSE_PATTERN,
@@ -35,10 +40,13 @@ public class DdlServiceImpl implements DdlService {
   }
 
   private String buildAttributes(List<LogicalAttributeInfoAttribute> attributes) {
+    if (CollectionUtils.isEmpty(attributes)) {
+      return "";
+    }
     List<String> attributeStrings = attributes.stream()
         .map(attr -> MessageFormat.format(
             DdlClausePatterns.COLUMN_PATTERN,
-            attr.getName(),
+            attr.getName().replaceAll(" ", "_"),
             EnumUtils.searchEnum(
                 PostgresDataType.class,
                 attr.getType(),
