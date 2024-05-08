@@ -47,3 +47,6 @@ class PipelineModel:
         processed_out = self._postprocess(model_out)
 
         return self._assemble_json(processed_out)
+    
+    def apply_raw(self, text: str) -> Doc:
+        return self._get_predictions(text)

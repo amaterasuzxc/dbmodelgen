@@ -37,7 +37,8 @@ class CompositionFinder:
             compositions = []
 
             for compare_span in sorted(group, key=lambda _:len(_.text)):
-                if re.fullmatch("^" + check_span.lemma_ + "(\s.*)?$", compare_span.lemma_):
+                pattern = r"^" + re.escape(check_span.lemma_) + r"(\s.*)?$"
+                if re.fullmatch(pattern, compare_span.lemma_):
                     not_roots.append(compare_span)
                     compositions.append(compare_span)
 
