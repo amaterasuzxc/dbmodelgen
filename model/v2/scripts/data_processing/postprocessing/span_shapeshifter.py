@@ -73,15 +73,16 @@ class ShapeShifter:
         if (self._is_gold(gramm)):
             if i != 0 and self._is_noun(gramm) and self._is_noun(gramms_list[i-1]):
                 result_list.append(gramm.inflect({gramm.tag.number, 'gent'}))
-            elif i < size - 1 and self._is_adjective(gramm) and not self._is_adjective(gramms_list[i+1]):
+            elif i < size - 1 and self._is_adjective(gramm) and self._is_noun(gramms_list[i+1]):
                 result_list.append(gramm.inflect({gramms_list[i+1].tag.number, 'nomn'}))
             elif i != 0 and self._is_adjective(gramm) and self._is_adjective(gramms_list[i-1]):
                 result_list.append(gramm.inflect({gramms_list[i-1].tag.number, gramms_list[i-1].tag.gender}))
             elif self._is_util(gramm):
                 result_list.append(gramm)
+            elif self._is_noun(gramm):
+                result_list.append(gramm.inflect({gramm.tag.number, 'nomn'}))
             else:
-                if self._is_noun(gramm):
-                    result_list.append(gramm.inflect({gramm.tag.number, 'nomn'}))
+                result_list.append(gramm)
         else:
             result_list.append(gramm)
         

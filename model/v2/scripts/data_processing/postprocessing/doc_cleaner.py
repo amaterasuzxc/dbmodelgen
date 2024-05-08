@@ -75,8 +75,8 @@ class Cleaner:
         new_spans = list(filter(lambda _:_ is not None, [new_span for (o, new_span) in all_spans]))
         
         for (old_span, new_span) in all_spans:
-            rel_direct_keys = list(filter(lambda _:_[0] == old_span.start, relations.keys()))
-            rel_reverse_keys = list(filter(lambda _:_[1] == old_span.start, relations.keys()))
+            rel_direct_keys = [key[1] for key in list(filter(lambda _:_[0] == old_span.start, relations.keys()))]
+            rel_reverse_keys = [key [0] for key in list(filter(lambda _:_[1] == old_span.start, relations.keys()))]
 
             if old_span.start not in categories and not rel_direct_keys and not rel_reverse_keys:
                 continue
